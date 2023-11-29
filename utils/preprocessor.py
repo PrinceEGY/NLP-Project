@@ -3,6 +3,7 @@ import string
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+import pandas as pd
 
 
 class Preprocessor:
@@ -29,17 +30,17 @@ class Preprocessor:
             nltk.download("wordnet")
             self.methods.append(self._lemmatize_words)
 
-    def apply(self, data: str | list) -> str | list[str]:
+    def apply(self, data: pd.Series | str | list) -> str | list[str]:
+        return self(data)
+
+    def __call__(self, data: str | list) -> str | list[str]:
         """Apply cleaning methods on the data and return the cleaned data"""
         result = data
         for method in self.methods:
-            result = method(result)
-        return result
-
-    def __call__(self, data: str | list) -> str | list[str]:
-        result = data
-        for method in self.methods:
-            result = method(result)
+            if isinstance(data, pd.Series):
+                result = result.map(method)
+            else:
+                result = method(result)
         return result
 
     def _remove_URL(self, text: str) -> str:
